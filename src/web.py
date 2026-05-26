@@ -95,3 +95,14 @@ async def close_bill():
     global current_bill # use global current bill
     current_bill = None # remove current bill
     return RedirectResponse("/", status_code=303) # redirect to main page
+
+@app.post("/add-user") # route for adding user
+async def add_user(name: str = Form(...)):
+    global current_bill # use global current bill
+
+    # check if active bill exists
+    if not current_bill: 
+        raise HTTPException(400, "Нет активного счёта")
+    current_bill.add_user(name) # add new user to bill
+    storage.save(current_bill, f"{current_bill.id}.json") # save updated bill
+    return RedirectResponse("/", status_code=303) # redirect to main page
