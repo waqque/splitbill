@@ -66,3 +66,32 @@ async def view_bill(request: Request, bill_id: str):
         "bill": bill,
         "debts": debts_named
     })
+@app.post("/create") # route for creating a new bill
+async def create_bill(name: str = Form(...)):
+
+    # use global current bill
+    global current_bill
+    bill = Bill(name=name) # create new bill
+    storage.save(bill, f"{bill.id}.json") # save bill to json
+    current_bill = bill # set current active bill
+    return RedirectResponse("/", status_code=303)# redirect to main page
+
+
+@app.post("/load/{bill_id}") # route for loading bill
+async def load_bill(bill_id: str):
+
+    # use global current bill
+    global current_bill
+    current_bill = storage.load(f"{bill_id}.json") # load bill from storage
+    
+    # if bill does not exist
+    if not current_bill:
+        raise HTTPException(404, "Счёт не найден")
+    return RedirectResponse("/", status_code=303) # redirect to main page
+
+
+@app.post("/close") # route for closing current bill
+async def close_bill(): 
+    global current_bill # use global current bill
+    current_bill = None # remove current bill
+    return RedirectResponse("/", status_code=303) # redirect to main page
