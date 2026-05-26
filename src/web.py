@@ -37,3 +37,32 @@ async def index(request: Request):
         "current_bill": current_bill,
         "bills": bills
     })
+
+@app.get("/bill/{bill_id}", response_class=HTMLResponse) # route for bill page
+async def view_bill(request: Request, bill_id: str):
+
+     # load bill from json file
+    bill = storage.load(f"{bill_id}.json")
+
+    # if bill does not exist
+    if not bill:
+        raise HTTPException(404, "Счёт не найден")
+
+    # calculate debts
+    debts = compute_debts(bill)
+
+    # list with usernames instead of ids
+    debts_named = []
+
+    # process all debts
+    for from_id, to_id, amount in debts:
+        from_name = bill.get_user_name(from_id) # get debtor name
+        to_name = bill.get_user_name(to_id) # get receiver name
+        debts_named.append((from_name, to_name, float(amount))) # add formatted debt
+
+    # return bill page
+    return templates.TemplateResponse("bill.html", {
+        "request": request,
+        "bill": bill,
+        "debts": debts_named
+    })
