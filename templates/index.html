@@ -9,5 +9,17 @@
     <div class="container">
         <h1>Bill Splitter</h1>
 
+        <div class="section">
+        <h2>Мои счета</h2>
+        
+        <div class="bills-list">
+            <p>Нет сохранённых счетов</p>
+        </div>
+
+        <form action="/create" method="post" class="form-inline">
+            <input type="text" name="name" placeholder="Название счёта" required>
+            <button type="submit" class="btn">+ Создать</button>
+        </form>
+
 </body>
 </html>
