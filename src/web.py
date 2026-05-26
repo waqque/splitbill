@@ -106,3 +106,35 @@ async def add_user(name: str = Form(...)):
     current_bill.add_user(name) # add new user to bill
     storage.save(current_bill, f"{current_bill.id}.json") # save updated bill
     return RedirectResponse("/", status_code=303) # redirect to main page
+
+@app.post("/add-item") # route for adding item
+async def add_item(
+    name: str = Form(...), # item name
+    price: float = Form(...), # item price
+    consumers: str = Form(...), # consumer names
+    quantity: int = Form(1) # item quantity
+):
+    global current_bill # use global current bill
+
+    # check if active bill exists
+    if not current_bill:
+        raise HTTPException(400, "Нет активного счёта")
+
+    consumer_names = [c.strip() for c in consumers.split(",")] # split consumer names
+    consumer_ids = [] # list for consumer ids
+
+    # find users by names
+    for user in current_bill.users.values():
+        if user.name in consumer_names:
+            consumer_ids.append(user.id)
+
+    # create new item
+    item = Item(
+        name=name,
+        price=Decimal(str(price)),
+        consumers=consumer_ids,
+        quantity=quantity
+    )
+    current_bill.items.append(item) # add item to bill
+    storage.save(current_bill, f"{current_bill.id}.json") # save updated bill
+    return RedirectResponse("/", status_code=303) # redirect to main page
