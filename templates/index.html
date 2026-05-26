@@ -38,5 +38,45 @@
     <p>Нет добавленных товаров</p>
 </div>
 
+<table class="table">
+                <thead>
+                    <tr><th>Название</th><th>Цена</th><th>Количество</th><th>Кто ест</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>td>
+                        <td></td>
+                        <td></td>
+                        <td>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Нет добавленных товаров</p>
+
+            <form action="/add-item" method="post" class="form-grid">
+                <input type="text" name="name" placeholder="Товар" required>
+                <input type="number" name="price" step="0.01" placeholder="Цена" required>
+                <input type="text" name="consumers" placeholder="Кто ест (через запятую)" required>
+                <input type="number" name="quantity" value="1" placeholder="Кол-во">
+                <button type="submit" class="btn-small">+ Добавить</button>
+            </form>
+
+            <h3>Платежи</h3>
+
+            <table class="table">
+                <thead><tr><th>Кто платил</th><th>Сумма</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Нет записанных платежей</p>
+
+
+
 </body>
 </html>
