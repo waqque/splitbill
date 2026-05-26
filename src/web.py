@@ -138,3 +138,27 @@ async def add_item(
     current_bill.items.append(item) # add item to bill
     storage.save(current_bill, f"{current_bill.id}.json") # save updated bill
     return RedirectResponse("/", status_code=303) # redirect to main page
+
+@app.post("/add-payment") # route for adding payment
+async def add_payment(user_name: str = Form(...), amount: float = Form(...)):
+    global current_bill # use global current bill
+
+    # check if active bill exists
+    if not current_bill:
+        raise HTTPException(400, "Нет активного счёта")
+
+    user = current_bill.get_user_by_name(user_name) # find user by name
+    
+    # if user does not exist
+    if not user:
+        raise HTTPException(404, f"Пользователь {user_name} не найден")
+
+    payment = Payment(user_id=user.id, amount=Decimal(str(amount))) # create payment
+    current_bill.payments.append(payment) # add payment to bill
+    storage.save(current_bill, f"{current_bill.id}.json") # save updated bill
+    return RedirectResponse("/", status_code=303) # redirect to main page
+
+# start application
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000) # run FastAPI server
