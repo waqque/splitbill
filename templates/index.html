@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bill Splitter</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -10,50 +11,73 @@
         <h1>Bill Splitter</h1>
 
         <div class="section">
-        <h2>Мои счета</h2>
-        
-        <div class="bills-list">
-            <p>Нет сохранённых счетов</p>
+            <h2>Мои счета</h2>
+            {% if bills %}
+                {% for bill in bills %}
+                <div class="bill-item">
+                    <span><strong>{{ bill.name }}</strong> ({{ bill.id[:8] }})</span>
+                    <div class="buttons">
+                        <form action="/load/{{ bill.id }}" method="post" style="display: inline">
+                            <button type="submit" class="btn-small">Открыть</button>
+                        </form>
+                        <a href="/bill/{{ bill.id }}" class="btn-small">Долги</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>Нет сохранённых счетов</p>
+            {% endif %}
+
+            <form action="/create" method="post" class="form-inline">
+                <input type="text" name="name" placeholder="Название счёта" required>
+                <button type="submit" class="btn">+ Создать</button>
+            </form>
         </div>
 
-        <form action="/create" method="post" class="form-inline">
-            <input type="text" name="name" placeholder="Название счёта" required>
-            <button type="submit" class="btn">+ Создать</button>
-        </form>
-
+        {% if current_bill %}
         <div class="section active">
             <div class="bill-header">
-        <h2>Название счёта</h2>
-        <button class="btn-small btn-danger">Закрыть</button>
-    </div>
+                <h2>📄 {{ current_bill.name }}</h2>
+                <form action="/close" method="post">
+                    <button type="submit" class="btn-small btn-danger">Закрыть</button>
+                </form>
+            </div>
 
-    <h3>Участники</h3>
-    <div class="user-list"></div>
-    <form class="form-inline">
-        <input type="text" placeholder="Имя">
-        <button class="btn-small">+ Добавить</button>
-    </form>
+            <h3>Участники</h3>
+            <div class="user-list">
+                {% for user in current_bill.users.values() %}
+                <span class="user-tag">{{ user.name }}</span>
+                {% endfor %}
+            </div>
+            <form action="/add-user" method="post" class="form-inline">
+                <input type="text" name="name" placeholder="Имя" required>
+                <button type="submit" class="btn-small">+ Добавить</button>
+            </form>
 
-    <h3>Товары</h3>
-    <p>Нет добавленных товаров</p>
-</div>
-
-<table class="table">
+            <h3>Товары</h3>
+            {% if current_bill.items %}
+            <table class="table">
                 <thead>
                     <tr><th>Название</th><th>Цена</th><th>Количество</th><th>Кто ест</th></tr>
                 </thead>
                 <tbody>
+                    {% for item in current_bill.items %}
                     <tr>
-                        <td>td>
-                        <td></td>
-                        <td></td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.price }} ₽</td>
+                        <td>{{ item.quantity }}</td>
                         <td>
-
+                            {% for cid in item.consumers %}
+                                {{ current_bill.users[cid].name }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
                         </td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
+            {% else %}
             <p>Нет добавленных товаров</p>
+            {% endif %}
 
             <form action="/add-item" method="post" class="form-grid">
                 <input type="text" name="name" placeholder="Товар" required>
@@ -64,19 +88,37 @@
             </form>
 
             <h3>Платежи</h3>
-
+            {% if current_bill.payments %}
             <table class="table">
                 <thead><tr><th>Кто платил</th><th>Сумма</th></tr></thead>
                 <tbody>
+                    {% for payment in current_bill.payments %}
                     <tr>
-                        <td></td>
-                        <td></td>
+                        <td>{{ current_bill.users[payment.user_id].name }}</td>
+                        <td>{{ payment.amount }} ₽</td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
+            {% else %}
             <p>Нет записанных платежей</p>
+            {% endif %}
 
+            <form action="/add-payment" method="post" class="form-inline">
+                <input type="text" name="user_name" placeholder="Кто заплатил" required>
+                <input type="number" name="amount" step="0.01" placeholder="Сумма" required>
+                <button type="submit" class="btn-small">Записать</button>
+            </form>
 
-
+            <div class="action-buttons">
+                <a href="/bill/{{ current_bill.id }}" class="btn">Посчитать долги</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="section">
+            <p>Выберите или создайте счёт</p>
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>
