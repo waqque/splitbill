@@ -203,3 +203,55 @@ def test_proportional_no_consumers():
     result = compute_debts(bill, method="proportional")
     
     assert result == []
+
+
+def test_simplify_one_debtor_one_creditor():
+    # One debtor and one creditor
+    bill = Bill(name="Test")
+    
+    bill.add_user("Alice")
+    bill.add_user("Bob")
+    
+    bill.items.append(Item(
+        name="Pizza",
+        price=Decimal("200"),
+        consumers=[],
+        quantity=1
+    ))
+    
+    alice = bill.get_user_by_name("Alice")
+    
+    bill.payments.append(
+        Payment(user_id=alice.id, amount=Decimal("200"))
+    )
+    
+    result = compute_debts(bill, method="equal")
+    
+    assert len(result) == 1
+    assert result[0][2] == Decimal("100")
+
+
+def test_simplify_two_debtors_one_creditor():
+    # Two users owe one creditor
+    bill = Bill(name="Test")
+    
+    bill.add_user("Alice")
+    bill.add_user("Bob")
+    bill.add_user("Charlie")
+    
+    bill.items.append(Item(
+        name="Pizza",
+        price=Decimal("300"),
+        consumers=[],
+        quantity=1
+    ))
+    
+    alice = bill.get_user_by_name("Alice")
+    
+    bill.payments.append(
+        Payment(user_id=alice.id, amount=Decimal("300"))
+    )
+    
+    result = compute_debts(bill, method="equal")
+    
+    assert len(result) == 2
