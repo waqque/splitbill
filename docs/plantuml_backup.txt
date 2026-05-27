@@ -1,0 +1,32 @@
+@startuml
+actor "Пользователь" as User
+participant "Браузер" as Browser
+participant "FastAPI" as API
+participant "Bill" as Bill
+participant "JSONStorage" as Storage
+
+User -> Browser: Вводит название счёта
+Browser -> API: POST /create (name="Пятница")
+activate API
+
+API -> Bill: Bill(name="Пятница")
+activate Bill
+Bill --> API: bill объект
+deactivate Bill
+
+API -> Storage: save(bill, "id.json")
+activate Storage
+Storage -> Storage: Запись в файл
+Storage --> API: OK
+deactivate Storage
+
+API --> Browser: Redirect to /
+Browser --> User: Показывает главную страницу
+deactivate API
+
+note right
+  Счёт создан и сохранён
+  Теперь активен для редактирования
+end note
+
+@enduml
