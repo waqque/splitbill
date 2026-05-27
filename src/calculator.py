@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from typing import List, Tuple, Dict
 from collections import defaultdict
 
@@ -70,7 +70,8 @@ def _simplify_debts(balance: Dict[str, Decimal]) -> List[Tuple[str, str, Decimal
 
         amount = min(-debt_amount, credit_amount)
         if amount > Decimal('0.01'):
-            debts.append((debtor_id, creditor_id, amount.round(2)))
+            rounded_amount = amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            debts.append((debtor_id, creditor_id, rounded_amount))
 
         debtors[i] = (debtor_id, debt_amount + amount)
         creditors[j] = (creditor_id, credit_amount - amount)
