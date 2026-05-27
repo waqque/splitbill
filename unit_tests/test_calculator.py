@@ -148,7 +148,7 @@ def test_proportional_who_ate_what():
 
 
 def test_proportional_everyone_ate_same():
-    # Everyone consumed the same item
+    """Everyone consumed the same item"""
     bill = Bill(name="Test")
     
     bill.add_user("Alice")
@@ -162,17 +162,12 @@ def test_proportional_everyone_ate_same():
     bill.items.append(Item(
         name="Pizza",
         price=Decimal("300"),
-        consumers=[alice.id, bob.id, charlie.id],
+        consumers=[alice.id, bob.id, charlie.id],  # исправлено
         quantity=1
     ))
     
-    bill.payments.append(
-        Payment(user_id=alice.id, amount=Decimal("200"))
-    )
-    
-    bill.payments.append(
-        Payment(user_id=bob.id, amount=Decimal("100"))
-    )
+    bill.payments.append(Payment(user_id=alice.id, amount=Decimal("200")))
+    bill.payments.append(Payment(user_id=bob.id, amount=Decimal("100")))
     
     result = compute_debts(bill, method="proportional")
     
