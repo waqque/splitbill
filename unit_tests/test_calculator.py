@@ -6,7 +6,8 @@ from src.calculator import compute_debts
 
 
 def test_one_person_paid_all():
-    bill = Bill(name="Test") # Alice paid full bill, others owe money
+    # Alice paid full bill, others owe money
+    bill = Bill(name="Test")
     
     bill.add_user("Alice")
     bill.add_user("Bob")
@@ -33,8 +34,66 @@ def test_one_person_paid_all():
     assert total_debt == Decimal("200")
 
 
+def test_two_people_paid():
+    # Multiple users paid for the bill
+    bill = Bill(name="Test")
+    
+    bill.add_user("Alice")
+    bill.add_user("Bob")
+    bill.add_user("Charlie")
+    
+    bill.items.append(Item(
+        name="Food",
+        price=Decimal("300"),
+        consumers=[],
+        quantity=1
+    ))
+    
+    alice = bill.get_user_by_name("Alice")
+    bob = bill.get_user_by_name("Bob")
+    
+    bill.payments.append(
+        Payment(user_id=alice.id, amount=Decimal("200"))
+    )
+    
+    bill.payments.append(
+        Payment(user_id=bob.id, amount=Decimal("100"))
+    )
+    
+    result = compute_debts(bill, method="equal")
+    
+    assert len(result) > 0
+
+
+def test_items_with_quantity():
+    # Item quantity should affect total price
+    bill = Bill(name="Test")
+    
+    bill.add_user("Alice")
+    bill.add_user("Bob")
+    
+    bill.items.append(Item(
+        name="Pizza",
+        price=Decimal("100"),
+        consumers=[],
+        quantity=3
+    ))
+    
+    alice = bill.get_user_by_name("Alice")
+    
+    bill.payments.append(
+        Payment(user_id=alice.id, amount=Decimal("300"))
+    )
+    
+    result = compute_debts(bill, method="equal")
+    
+    assert len(result) == 1
+    assert result[0][2] == Decimal("150")
+
+
 def test_empty_bill():
-    bill = Bill(name="Test") # Empty bill should return no debts
+    # Empty bill should return no debts
+    bill = Bill(name="Test")
     
     bill.add_user("Alice")
     
@@ -44,7 +103,8 @@ def test_empty_bill():
 
 
 def test_proportional_who_ate_what():
-    bill = Bill(name="Test") # Users pay only for consumed items
+    # Users pay only for consumed items
+    bill = Bill(name="Test")
     
     bill.add_user("Alice")
     bill.add_user("Bob")
@@ -55,7 +115,7 @@ def test_proportional_who_ate_what():
     charlie = bill.get_user_by_name("Charlie")
     
     # Pizza for Alice and Bob
-    bill.items.append(Item( 
+    bill.items.append(Item(
         name="Pizza",
         price=Decimal("200"),
         consumers=[alice.id, bob.id],
@@ -87,8 +147,42 @@ def test_proportional_who_ate_what():
     assert charlie_debt == Decimal("30")
 
 
+def test_proportional_everyone_ate_same():
+    # Everyone consumed the same item
+    bill = Bill(name="Test")
+    
+    bill.add_user("Alice")
+    bill.add_user("Bob")
+    bill.add_user("Charlie")
+    
+    alice = bill.get_user_by_name("Alice")
+    bob = bill.get_user_by_name("Bob")
+    charlie = bill.get_user_by_name("Charlie")
+    
+    bill.items.append(Item(
+        name="Pizza",
+        price=Decimal("300"),
+        consumers=[alice.id, bob.id, charlie.id],
+        quantity=1
+    ))
+    
+    bill.payments.append(
+        Payment(user_id=alice.id, amount=Decimal("200"))
+    )
+    
+    bill.payments.append(
+        Payment(user_id=bob.id, amount=Decimal("100"))
+    )
+    
+    result = compute_debts(bill, method="proportional")
+    
+    assert len(result) == 1
+    assert result[0][2] == Decimal("100")
+
+
 def test_proportional_no_consumers():
-    bill = Bill(name="Test") # Item without consumers should be ignored
+    # Item without consumers should be ignored
+    bill = Bill(name="Test")
     
     bill.add_user("Alice")
     bill.add_user("Bob")
