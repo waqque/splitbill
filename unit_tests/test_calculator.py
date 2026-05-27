@@ -255,3 +255,130 @@ def test_simplify_two_debtors_one_creditor():
     result = compute_debts(bill, method="equal")
     
     assert len(result) == 2
+
+
+def test_wrong_method():
+    # Invalid calculation method should raise error
+    bill = Bill(name="Test")
+    
+    bill.add_user("Alice")
+    
+    with pytest.raises(ValueError):
+        compute_debts(bill, method="invalid_method")
+
+
+def test_nothing_at_all():
+    # No users and no items
+    bill = Bill(name="Test")
+    
+    result = compute_debts(bill, method="equal")
+    
+    assert result == []
+
+
+def test_decimal_precision():
+    # Decimal values should work correctly
+    bill = Bill(name="Test")
+    
+    bill.add_user("Alice")
+    bill.add_user("Bob")
+    
+    bill.items.append(Item(
+        name="Item",
+        price=Decimal("10.33"),
+        consumers=[],
+        quantity=3
+    ))
+    
+    alice = bill.get_user_by_name("Alice")
+    
+    bill.payments.append(
+        Payment(user_id=alice.id, amount=Decimal("30.99"))
+    )
+    
+    result = compute_debts(bill, method="equal")
+    
+    assert result[0][2] == Decimal("15.50")
+
+
+def test_real_restaurant():
+    # Real restaurant scenario
+    bill = Bill(name="Restaurant")
+    
+    bill.add_user("Alice")
+    bill.add_user("Bob")
+    bill.add_user("Charlie")
+    
+    alice = bill.get_user_by_name("Alice")
+    bob = bill.get_user_by_name("Bob")
+    charlie = bill.get_user_by_name("Charlie")
+    
+    bill.items.append(Item(
+        name="Steak",
+        price=Decimal("800"),
+        consumers=[alice.id],
+        quantity=1
+    ))
+    
+    bill.items.append(Item(
+        name="Pizza",
+        price=Decimal("500"),
+        consumers=[alice.id, bob.id, charlie.id],
+        quantity=1
+    ))
+    
+    bill.items.append(Item(
+        name="Beer",
+        price=Decimal("200"),
+        consumers=[bob.id, charlie.id],
+        quantity=2
+    ))
+    
+    bill.payments.append(
+        Payment(user_id=alice.id, amount=Decimal("1000"))
+    )
+    
+    bill.payments.append(
+        Payment(user_id=bob.id, amount=Decimal("500"))
+    )
+    
+    bill.payments.append(
+        Payment(user_id=charlie.id, amount=Decimal("200"))
+    )
+    
+    result = compute_debts(bill, method="proportional")
+    
+    assert result is not None
+
+
+def test_birthday_party():
+    # Birthday person should not pay
+    bill = Bill(name="Birthday")
+    
+    bill.add_user("BirthdayBoy")
+    bill.add_user("Friend1")
+    bill.add_user("Friend2")
+    
+    birthday = bill.get_user_by_name("BirthdayBoy")
+    friend1 = bill.get_user_by_name("Friend1")
+    friend2 = bill.get_user_by_name("Friend2")
+    
+    bill.items.append(Item(
+        name="Cake",
+        price=Decimal("1000"),
+        consumers=[friend1.id, friend2.id],
+        quantity=1
+    ))
+    
+    bill.payments.append(
+        Payment(user_id=friend1.id, amount=Decimal("600"))
+    )
+    
+    bill.payments.append(
+        Payment(user_id=friend2.id, amount=Decimal("400"))
+    )
+    
+    result = compute_debts(bill, method="proportional")
+    
+    for from_id, _, _ in result:
+        assert from_id != birthday.id
