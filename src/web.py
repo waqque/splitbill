@@ -34,7 +34,6 @@ async def index(request: Request):
     # return html page
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "current_bill": current_bill,
         "bills": bills
     })
 
