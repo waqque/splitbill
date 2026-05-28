@@ -184,4 +184,7 @@ pytest tests/ -v
 
 `make clean` - Удалить кэш (`__pycache__/`) и все JSON-файлы из `data/`
 
+## License
+
+https://mit-license.org/
 
