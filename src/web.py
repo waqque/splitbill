@@ -32,10 +32,14 @@ async def index(request: Request):
     bills = storage.list_bills()
 
     # return html page
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "bills": bills
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "current_bill": current_bill,
+            "bills": bills
+        }
+    )
 
 @app.get("/bill/{bill_id}", response_class=HTMLResponse) # route for bill page
 async def view_bill(request: Request, bill_id: str):
@@ -60,11 +64,14 @@ async def view_bill(request: Request, bill_id: str):
         debts_named.append((from_name, to_name, float(amount))) # add formatted debt
 
     # return bill page
-    return templates.TemplateResponse("bill.html", {
-        "request": request,
-        "bill": bill,
-        "debts": debts_named
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="bill.html",
+        context={
+            "bill": bill,
+            "debts": debts_named
+        }
+    )
 @app.post("/create") # route for creating a new bill
 async def create_bill(name: str = Form(...)):
 

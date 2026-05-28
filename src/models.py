@@ -49,10 +49,13 @@ class Bill: # bill class
         self.users[user.id] = user # saved to dictionary
         return user
 
-    def get_user_by_name(self, name: str) -> Optional[User]: # method: find user by name
+    def get_user_by_name(self, name: str) -> Optional[User]:
+        normalized_name = name.strip().lower()
+
         for user in self.users.values():
-            if user.name == name:
+            if user.name.strip().lower() == normalized_name:
                 return user
+
         return None
 
     def get_user_name(self, user_id: str) -> str: # method: get username by id
